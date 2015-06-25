@@ -7,12 +7,31 @@
 //
 
 #import "ToDoListTableViewController.h"
+#import "ToDoItem.h"
 
 @interface ToDoListTableViewController ()
+
+// private variable
+@property NSMutableArray *toDoItems;
 
 @end
 
 @implementation ToDoListTableViewController
+
+- (void) loadInitialData {
+	ToDoItem *item1 = [[ToDoItem alloc] init];
+	item1.itemName = @"Buy milk";
+	[self.toDoItems addObject:item1];
+	
+	ToDoItem *item2 = [[ToDoItem alloc] init];
+	item2.itemName = @"Buy egg";
+	[self.toDoItems addObject:item2];
+	
+	ToDoItem *item3 = [[ToDoItem alloc] init];
+	item3.itemName = @"Read a book";
+	[self.toDoItems addObject:item3];
+}
+
 
 - (IBAction)unwindToList:(UIStoryboardSegue *)segue {
  
@@ -20,7 +39,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+	// allocate and initialize the arrary
+	self.toDoItems = [[NSMutableArray alloc] init];
+	[self loadInitialData];
+	
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
     
@@ -35,27 +57,41 @@
 
 #pragma mark - Table view data source
 
+// Only 1 section for the table view
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-#warning Potentially incomplete method implementation.
     // Return the number of sections.
-    return 0;
+    return 1;
 }
 
+// We have a single section in the table and each to-do item should have its own row in that section
+// That means the number of rows should be the number of ToDoItem objects in your toDoItems array
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-#warning Incomplete method implementation.
     // Return the number of rows in the section.
-    return 0;
+    return [self.toDoItems count];
 }
 
-/*
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ListPrototypeCell" forIndexPath:indexPath];
     
     // Configure the cell...
-    
+	// fetch the appropriate item in the toDoItems array and
+	// set the name of that item to displa in the cell
+	ToDoItem *toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
+	
+	// display the title as label
+	cell.textLabel.text = toDoItem.itemName;
+	
+	// display items' completion state(checkbox)
+	if (toDoItem.completed) {
+		cell.accessoryType = UITableViewCellAccessoryCheckmark;
+	} else {
+		cell.accessoryType = UITableViewCellAccessoryNone;
+	}
+	
     return cell;
 }
-*/
+
 
 /*
 // Override to support conditional editing of the table view.
@@ -100,5 +136,22 @@
     // Pass the selected object to the new view controller.
 }
 */
+
+#pragma mark = Table view delegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+	// respond to a tap but not actually leave the cell selected
+	// deselect the cell immediately after selection
+	[tableView deselectRowAtIndexPath:indexPath animated:NO];
+	
+	// search for the ToDoItem in the toDoItems array that corresponds to the cell that was tapped
+	// toggle the completion state of the tapped item
+	ToDoItem *tappedItem = [self.toDoItems objectAtIndex:indexPath.row];
+	tappedItem.completed = !tappedItem.completed;
+	
+	// tell the table view to reload the row whose data you just updated
+	[tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+}
+
 
 @end
